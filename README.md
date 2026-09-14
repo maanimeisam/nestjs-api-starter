@@ -1,114 +1,171 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NestJS 12 Production REST Starter
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A strict ESM starter for NestJS 12, PostgreSQL 18, TypeORM 1.1, Passport/JWT authentication, OpenAPI, Vitest, Docker, and GitHub Actions.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Features
 
-## Description
+- Strict NestJS 12 ESM application with validated typed configuration
+- PostgreSQL 18 entities and reversible TypeORM migrations
+- Stateless access JWTs, rotating hashed refresh sessions, and typed roles
+- Validation, Helmet, CORS, request IDs, structured logs, errors, and bounded rate limits
+- OpenAPI, database health checks, Vitest, Docker, and CI
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tech stack
 
-## Project setup
+NestJS 12, TypeScript, Express, PostgreSQL 18, TypeORM 1.1, Passport/JWT, Swagger, Vitest, oxlint, Prettier, and npm.
 
-```bash
-$ npm install
-```
+## Requirements
 
-## Compile and run the project
+- Node 24.15 or newer in the Node 24 LTS line
+- PostgreSQL 18
+- npm
+
+The repository targets Node 24 in `.nvmrc`, `.node-version`, Docker, and CI. Its engine range is `^24.15.0 || >=26.0.0`: developers already using a compatible Node 26 or newer release do not need to downgrade, while unsupported Node 25 releases are excluded.
+
+## Quick start
+
+After cloning this repository:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
+cp .env.example .env
+docker compose up -d database
+npm run migration:run
+npm run start:dev
 ```
 
-## Run tests
+The API is available at `http://localhost:3000/api/v1`; Swagger UI is at `http://localhost:3000/api/docs` when enabled.
+
+## Configuration
+
+| Variable                    | Purpose                                | Default                 |
+| --------------------------- | -------------------------------------- | ----------------------- |
+| `NODE_ENV`                  | `development`, `test`, or `production` | `development`           |
+| `APP_NAME`, `APP_VERSION`   | Service and OpenAPI identity           | starter values          |
+| `PORT`                      | HTTP port                              | `3000`                  |
+| `API_PREFIX`, `API_VERSION` | URI prefix and version                 | `api`, `1`              |
+| `DATABASE_URL`              | PostgreSQL connection URL              | required                |
+| `DATABASE_SSL`              | Require PostgreSQL TLS                 | `false`                 |
+| `JWT_ACCESS_SECRET`         | Access-token signing secret            | required, 32+ chars     |
+| `JWT_ACCESS_EXPIRES_IN`     | Access-token lifetime in seconds       | `900`                   |
+| `JWT_REFRESH_SECRET`        | Refresh-token signing secret           | required, 32+ chars     |
+| `JWT_REFRESH_EXPIRES_IN`    | Refresh-token lifetime in seconds      | `2592000`               |
+| `CORS_ORIGINS`              | Comma-separated allowed origins        | `http://localhost:3000` |
+| `SWAGGER_ENABLED`           | Serve Swagger UI and JSON              | `true`                  |
+| `LOG_LEVEL`                 | Nest log threshold                     | `log`                   |
+| `TRUST_PROXY_HOPS`          | Trusted reverse-proxy hop count        | `0`                     |
+| `TEST_DATABASE_URL`         | Disposable PostgreSQL E2E database     | required for E2E        |
+| `POSTGRES_USER/PASSWORD/DB` | Local Compose database settings        | `nestjs` starter values |
+
+Startup validation rejects malformed configuration, example secrets in production, and wildcard production CORS. Use independent high-entropy JWT secrets in deployed environments.
+
+## API
+
+| Method | Route                   | Access        |
+| ------ | ----------------------- | ------------- |
+| `POST` | `/api/v1/auth/register` | Public        |
+| `POST` | `/api/v1/auth/login`    | Public        |
+| `POST` | `/api/v1/auth/refresh`  | Public        |
+| `POST` | `/api/v1/auth/logout`   | Public        |
+| `GET`  | `/api/v1/auth/me`       | Authenticated |
+| `GET`  | `/api/v1/users/:id`     | Self or admin |
+| `GET`  | `/api/v1/users`         | Admin         |
+| `GET`  | `/api/v1/health`        | Public        |
+
+Register, login, and refresh use a stricter 10-request/minute per-IP-and-route limit that replaces the 120-request/minute global policy for those routes. The built-in limiter is bounded and per process; use a shared proxy or datastore limiter when scaling horizontally.
+
+### Authentication
+
+Register and login return a user plus a bearer token pair. Send the access token in `Authorization: Bearer <token>` for protected routes, and send `{ "refreshToken": "..." }` to refresh or logout. Passwords use asynchronous Node `crypto.scrypt()` with a versioned, self-describing stored format. Refresh tokens are stored only as SHA-256 hashes and rotate transactionally. Logout revokes refresh sessions only: access JWTs remain stateless and valid until their short expiry, with no blacklist or per-request database lookup. Public input cannot assign roles; promote administrators only through a trusted operational database workflow.
+
+## API documentation
+
+Swagger UI is served at `/api/docs` and OpenAPI JSON at `/api/docs-json` when `SWAGGER_ENABLED=true`.
+
+## Commands
+
+| Command                                                      | Action                           |
+| ------------------------------------------------------------ | -------------------------------- |
+| `npm run start:dev`                                          | Run with watch mode              |
+| `npm run build` / `npm run start:prod`                       | Build / run compiled ESM         |
+| `npm run format` / `npm run format:check`                    | Write / check formatting         |
+| `npm run lint` / `npm run lint:fix`                          | Check / fix oxlint findings      |
+| `npm run typecheck`                                          | Strict TypeScript check          |
+| `npm test` / `npm run test:cov`                              | Unit tests / coverage            |
+| `npm run test:e2e`                                           | Migrated PostgreSQL E2E suite    |
+| `npm run migration:create -- src/database/migrations/Name`   | Create a migration               |
+| `npm run migration:generate -- src/database/migrations/Name` | Generate from entity changes     |
+| `npm run migration:run` / `npm run migration:revert`         | Apply / revert source migrations |
+| `npm run migration:run:prod`                                 | Apply compiled migrations        |
+
+## Database and migrations
+
+`synchronize` is disabled in every environment. Commit and review every generated migration, and verify it with `npm run migration:run`, `npm run migration:revert`, then `npm run migration:run` before release. Development commands use the ESM TypeScript DataSource; production commands use compiled JavaScript.
+
+## Testing
+
+Unit tests do not require PostgreSQL. E2E tests require `TEST_DATABASE_URL`; the database name must end in `_test`. The suite drops and recreates only its `public` schema, runs real migrations, then verifies health, Swagger, validation, conflicts, login, authorization, pagination, refresh rotation, consumed/revoked refresh-token rejection, logout, and continued access-token validity after logout.
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cp .env.test.example .env.test
+npm run test:e2e
 ```
 
-## Deployment
+The E2E command fails rather than silently skipping database verification when `TEST_DATABASE_URL` is absent or unsafe.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Docker
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+docker compose up --build
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Compose starts PostgreSQL 18 with persistent storage and health-based dependency ordering. The multi-stage Node 24 image contains production dependencies only, runs as the non-root `node` user, applies compiled migrations, and starts the compiled ESM service. Override the local Compose secrets before any non-local deployment.
 
-## Observability
+## Architecture
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+```text
+src/
+  common/       guards, decorators, errors, request context, pagination
+  config/       typed configuration and startup validation
+  database/     shared TypeORM options, DataSource, migrations
+  modules/
+    auth/       JWTs, refresh sessions, asynchronous scrypt
+    users/      users and role-based access
+    health/     application and PostgreSQL health
+```
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+## Adding a module
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+Create only the files the feature needs:
 
-## Resources
+```text
+src/modules/products/
+  products.controller.ts  transport and HTTP contracts
+  products.service.ts     business and persistence flow
+  product.entity.ts       TypeORM mapping
+  products.dto.ts         validation and response schemas
+  products.module.ts      Nest wiring
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+Import the module in `AppModule`, add a migration for schema changes, and add unit or PostgreSQL-backed E2E coverage at the relevant boundary.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observer](https://observer.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Security and production checks
 
-## Support
+The bootstrap enables Helmet before other middleware, allowlisted CORS, strict DTO validation, request IDs, sanitized error responses, shutdown hooks, and structured JSON logs in production. Full `strictPropertyInitialization` is intentionally enabled even though the generated NestJS 12 ESM scaffold disables it.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Before release:
 
-## Stay in touch
+- replace example secrets and set the production `DATABASE_URL` and CORS allowlist
+- run formatting, lint, type checking, unit tests, migration run/revert/run, build, and E2E tests
+- validate Compose and build the container image
+- terminate HTTPS at a trusted boundary and set `TRUST_PROXY_HOPS` precisely
+- restrict and back up PostgreSQL; disable public Swagger if unnecessary
+- put a shared rate limiter in front of multiple application instances
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+[MIT](LICENSE) © NestJS API Starter contributors.
