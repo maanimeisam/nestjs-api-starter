@@ -32,7 +32,8 @@
     "migration:run": "typeorm-ts-node-esm migration:run -d src/database/data-source.ts",
     "migration:revert": "typeorm-ts-node-esm migration:revert -d src/database/data-source.ts",
     "migration:run:prod": "typeorm migration:run -d dist/database/data-source.js",
-    "migration:revert:prod": "typeorm migration:revert -d dist/database/data-source.js"
+    "migration:revert:prod": "typeorm migration:revert -d dist/database/data-source.js",
+    "prepare": "husky"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
@@ -66,6 +67,7 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^7.0.0",
     "@vitest/coverage-v8": "^4.1.2",
+    "husky": "^9.1.7",
     "oxlint": "^1.58.0",
     "prettier": "^3.4.2",
     "source-map-support": "^0.5.21",
